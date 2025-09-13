@@ -20,7 +20,7 @@ import {
   useToast,
   ButtonGroup
 } from '@chakra-ui/react';
-import { BookOpen, Star, ArrowForward } from 'lucide-react';
+import { BookOpen, Star, ArrowRight } from 'lucide-react';
 import { coursesApi } from '../services/api';
 
 const Courses = () => {
@@ -96,7 +96,7 @@ const Courses = () => {
               </Text>
               <Button
                 colorScheme="blue"
-                rightIcon={<ArrowForward size={18} />}
+                rightIcon={<ArrowRight size={18} />}
                 onClick={() => navigate('/')}
               >
                 Back to Home
@@ -181,7 +181,7 @@ const Courses = () => {
                     <Button
                       colorScheme="blue"
                       flex={1}
-                      rightIcon={<ArrowForward size={18} />}
+                      rightIcon={<ArrowRight size={18} />}
                       onClick={() => navigate(`/courses/${course.id}/view`)}
                     >
                       Start

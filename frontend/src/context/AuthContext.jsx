@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }) => {
           isAdmin: false,
           isTeacher: false,
           isStudent: false,
+          error: error.message || 'Authentication failed',
         });
       }
     };
@@ -120,8 +121,8 @@ export const AuthProvider = ({ children }) => {
           password: userData.password 
         });
 
-        if (loginResponse?.data?.token) {
-          localStorage.setItem('token', loginResponse.data.token);
+        if (loginResponse?.data?.access_token) {
+          localStorage.setItem('token', loginResponse.data.access_token);
           const userResponse = await authApi.getMe();
           
           setState({

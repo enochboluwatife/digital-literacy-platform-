@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Box, Flex, Spinner, Center, useToast, Alert, AlertIcon } from "@chakra-ui/react";
+import { Box, Flex, Spinner, Center, useToast, Alert, AlertIcon, Button } from "@chakra-ui/react";
 import { useAuth } from "../context/AuthContext";
 import { coursesApi } from "../services/api";
 
 import CourseHeader from "../components/course/CourseHeader";
 import CourseTabs from "../components/course/CourseTabs";
-import CourseSidebar from "../components/course/CourseSidebar";
 import QuizModal from "../components/quiz/QuizModal";
 
 const CourseDetail = () => {
-  const { courseId } = useParams();
+  const { id: courseId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
+  
+  // Debug logging
+  console.log('CourseDetail - courseId from useParams:', courseId);
+  console.log('CourseDetail - all params:', useParams());
 
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +30,12 @@ const CourseDetail = () => {
     const fetchCourse = async () => {
       try {
         setLoading(true);
+        console.log('Fetching course with ID:', courseId);
+        if (!courseId) {
+          setError('Course ID is required');
+          setLoading(false);
+          return;
+        }
         const response = await coursesApi.getCourse(courseId);
         setCourse(response);
         
@@ -119,12 +128,6 @@ const CourseDetail = () => {
           />
         </Box>
         
-        <CourseSidebar 
-          course={course} 
-          quizResults={quizResults}
-          activeModule={activeModule}
-          onModuleSelect={handleModuleClick}
-        />
       </Flex>
 
       <QuizModal 

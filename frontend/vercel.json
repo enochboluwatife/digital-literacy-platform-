@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://digital-literacy-backend.onrender.com/$1"
+      "destination": "https://digital-literacy-backend.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",

@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router-dom';
 import { lazy } from 'react';
 import { Box, Spinner } from '@chakra-ui/react';
-import { ErrorBoundary } from 'react-error-boundary';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 import PublicRoute from './PublicRoute';
 import ProtectedRoute from './ProtectedRoute';
 
@@ -13,8 +13,8 @@ const LoadingFallback = () => (
   </Box>
 );
 
-// Error boundary fallback
-const ErrorFallback = ({ error, resetErrorBoundary }) => (
+// Simple error fallback for routes
+const RouteErrorFallback = ({ error, resetErrorBoundary }) => (
   <Box p={8} textAlign="center">
     <h2>Something went wrong</h2>
     <pre style={{ color: 'red', marginTop: '1rem' }}>{error?.message}</pre>
@@ -42,7 +42,7 @@ const createRoute = (path, importFn, options = {}) => {
   const LazyComponent = lazy(importFn);
   
   const WrappedComponent = (props) => (
-    <ErrorBoundary fallback={ErrorFallback}>
+    <ErrorBoundary>
       <Suspense fallback={<LoadingFallback />}>
         <LazyComponent {...props} />
       </Suspense>
@@ -69,26 +69,37 @@ const createRoute = (path, importFn, options = {}) => {
 // Create the router configuration
 export const createRouter = () => {
   const Layout = lazy(() => import('../components/layout/Layout'));
+  const HomePage = lazy(() => import('../pages/HomePage'));
+  const Login = lazy(() => import('../pages/auth/Login'));
+  const Register = lazy(() => import('../pages/auth/Register'));
+  const StudentDashboard = lazy(() => import('../pages/StudentDashboard'));
+  const TeacherDashboard = lazy(() => import('../pages/teacher/TeacherDashboard'));
+  const AdminDashboard = lazy(() => import('../pages/AdminDashboard'));
+  const Courses = lazy(() => import('../pages/Courses'));
+  const CourseDetail = lazy(() => import('../pages/CourseDetail'));
+  const CourseView = lazy(() => import('../pages/CourseView'));
+  const NotFound = lazy(() => import('../pages/NotFound'));
+  const Unauthorized = lazy(() => import('../pages/Unauthorized'));
   
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route
         path="/"
         element={
-          <ErrorBoundary fallback={ErrorFallback}>
+          <ErrorBoundary>
             <Suspense fallback={<LoadingFallback />}>
               <Layout />
             </Suspense>
           </ErrorBoundary>
         }
-        errorElement={<ErrorFallback error={new Error('Route error')} resetErrorBoundary={() => window.location.reload()} />}
+        errorElement={<RouteErrorFallback error={new Error('Route error')} resetErrorBoundary={() => window.location.reload()} />}
       >
         {/* Index/Home Route */}
         <Route
           index
           element={
             <Suspense fallback={<LoadingFallback />}>
-              {React.createElement(lazy(() => import('../pages/HomePage')))}
+              <HomePage />
             </Suspense>
           }
         />
@@ -99,7 +110,7 @@ export const createRouter = () => {
           element={
             <PublicRoute>
               <Suspense fallback={<LoadingFallback />}>
-                {React.createElement(lazy(() => import('../pages/auth/Login')))}
+                <Login />
               </Suspense>
             </PublicRoute>
           }
@@ -109,7 +120,7 @@ export const createRouter = () => {
           element={
             <PublicRoute>
               <Suspense fallback={<LoadingFallback />}>
-                {React.createElement(lazy(() => import('../pages/auth/Register')))}
+                <Register />
               </Suspense>
             </PublicRoute>
           }
@@ -141,7 +152,7 @@ export const createRouter = () => {
           element={
             <ProtectedRoute roles={['student']}>
               <Suspense fallback={<LoadingFallback />}>
-                {React.createElement(lazy(() => import('../pages/StudentDashboard')))}
+                <StudentDashboard />
               </Suspense>
             </ProtectedRoute>
           }
@@ -153,7 +164,7 @@ export const createRouter = () => {
           element={
             <ProtectedRoute roles={['teacher']}>
               <Suspense fallback={<LoadingFallback />}>
-                {React.createElement(lazy(() => import('../pages/teacher/TeacherDashboard')))}
+                <TeacherDashboard />
               </Suspense>
             </ProtectedRoute>
           }
@@ -252,7 +263,7 @@ export const createRouter = () => {
         <Route
           path="unauthorized"
           element={
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <ErrorBoundary>
               <div>Unauthorized</div>
             </ErrorBoundary>
           }
@@ -260,7 +271,7 @@ export const createRouter = () => {
         <Route
           path="404"
           element={
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <ErrorBoundary>
               <div>Not Found</div>
             </ErrorBoundary>
           }
@@ -268,7 +279,7 @@ export const createRouter = () => {
         <Route
           path="*"
           element={
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <ErrorBoundary>
               <div>Not Found</div>
             </ErrorBoundary>
           }

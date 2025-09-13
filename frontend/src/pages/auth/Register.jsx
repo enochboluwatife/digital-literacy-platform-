@@ -242,8 +242,7 @@ const Register = () => {
                   onChange={handleInputChange}
                 >
                   <option value="student">Student</option>
-                  <option value="lecturer">Lecturer</option>
-                  <option value="researcher">Researcher</option>
+                  <option value="teacher">Teacher</option>
                 </Select>
               </FormControl>
               

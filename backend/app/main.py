@@ -5,6 +5,7 @@ from datetime import datetime
 from . import models, schemas
 from .database import engine, SessionLocal
 from .routers import auth, users, courses, quizzes, enrollments, modules
+from .api import admin
 import os
 
 # Create database tables
@@ -47,6 +48,7 @@ app.include_router(courses.router, prefix="/api")
 app.include_router(quizzes.router, prefix="/api")
 app.include_router(enrollments.router, prefix="/api")
 app.include_router(modules.router, prefix="/api")
+app.include_router(admin.router)
 
 # Root endpoint
 @app.get("/")

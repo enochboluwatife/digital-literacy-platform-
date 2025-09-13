@@ -2,15 +2,11 @@ services:
   - type: web
     name: digital-literacy-backend
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
-        sync: false
+        value: sqlite:///./digital_literacy.db
       - key: SECRET_KEY
-        generateValue: true
-      - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: 30
-      - key: ALGORITHM
-        value: HS256
-    healthCheckPath: /health
+        value: your-secret-key-change-this-in-production
