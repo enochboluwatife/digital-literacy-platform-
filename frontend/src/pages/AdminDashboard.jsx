@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { BookOpen, Users, TrendingUp, Award, Plus, Edit, Trash2, Eye } from "lucide-react"
+import { coursesApi } from "../services/api"
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -16,74 +17,68 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Mock data
-    const mockStats = {
-      totalStudents: 3250,
-      totalCourses: 12,
-      completionRate: 78,
-      certificatesIssued: 1890,
-    }
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch courses
+        const coursesResponse = await coursesApi.getCourses();
+        const coursesData = coursesResponse.data || [];
+        
+        // Mock stats for now - in a real app, these would come from analytics API
+        const mockStats = {
+          totalStudents: 3250,
+          totalCourses: coursesData.length,
+          completionRate: 78,
+          certificatesIssued: 1890,
+        }
 
-    const mockCourses = [
-      {
-        id: 1,
-        title: "Basic Computer Skills",
-        students: 1250,
-        completion: 85,
-        status: "active",
-      },
-      {
-        id: 2,
-        title: "Internet Safety & Security",
-        students: 980,
-        completion: 92,
-        status: "active",
-      },
-      {
-        id: 3,
-        title: "Digital Communication",
-        students: 1100,
-        completion: 76,
-        status: "active",
-      },
-    ]
+        // Mock students for now - in a real app, these would come from users API
+        const mockStudents = [
+          {
+            id: 1,
+            name: "Adebayo Johnson",
+            email: "adebayo.j@university.edu.ng",
+            institution: "University of Lagos",
+            coursesEnrolled: 3,
+            coursesCompleted: 2,
+            joinDate: "2024-01-15",
+          },
+          {
+            id: 2,
+            name: "Fatima Hassan",
+            email: "fatima.h@university.edu.ng",
+            institution: "Ahmadu Bello University",
+            coursesEnrolled: 2,
+            coursesCompleted: 1,
+            joinDate: "2024-02-20",
+          },
+          {
+            id: 3,
+            name: "Chidi Okafor",
+            email: "chidi.o@university.edu.ng",
+            institution: "University of Nigeria",
+            coursesEnrolled: 4,
+            coursesCompleted: 3,
+            joinDate: "2024-01-08",
+          },
+        ]
 
-    const mockStudents = [
-      {
-        id: 1,
-        name: "Adebayo Johnson",
-        email: "adebayo.j@university.edu.ng",
-        institution: "University of Lagos",
-        coursesEnrolled: 3,
-        coursesCompleted: 2,
-        joinDate: "2024-01-15",
-      },
-      {
-        id: 2,
-        name: "Fatima Hassan",
-        email: "fatima.h@university.edu.ng",
-        institution: "Ahmadu Bello University",
-        coursesEnrolled: 2,
-        coursesCompleted: 1,
-        joinDate: "2024-02-20",
-      },
-      {
-        id: 3,
-        name: "Chidi Okafor",
-        email: "chidi.o@university.edu.ng",
-        institution: "University of Nigeria",
-        coursesEnrolled: 4,
-        coursesCompleted: 3,
-        joinDate: "2024-01-08",
-      },
-    ]
+        setStats(mockStats)
+        setCourses(coursesData)
+        setStudents(mockStudents)
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        // Fallback to empty data
+        setStats({ totalStudents: 0, totalCourses: 0, completionRate: 0, certificatesIssued: 0 });
+        setCourses([]);
+        setStudents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setTimeout(() => {
-      setStats(mockStats)
-      setCourses(mockCourses)
-      setStudents(mockStudents)
-      setLoading(false)
-    }, 1000)
+    fetchDashboardData();
   }, [])
 
   return (

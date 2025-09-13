@@ -40,13 +40,13 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Include routers
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(courses.router)
-app.include_router(quizzes.router)
-app.include_router(enrollments.router)
-app.include_router(modules.router)
+# Include routers with /api prefix
+app.include_router(auth.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
+app.include_router(courses.router, prefix="/api")
+app.include_router(quizzes.router, prefix="/api")
+app.include_router(enrollments.router, prefix="/api")
+app.include_router(modules.router, prefix="/api")
 
 # Root endpoint
 @app.get("/")

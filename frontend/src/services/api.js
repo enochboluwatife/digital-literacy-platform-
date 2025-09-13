@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -88,10 +88,10 @@ api.interceptors.response.use(
 
 // Auth API
 export const authApi = {
-  login: (email, password) => {
+  login: (data) => {
     const params = new URLSearchParams();
-    params.append('username', email);
-    params.append('password', password);
+    params.append('username', data.email);
+    params.append('password', data.password);
     return api.post('/auth/login', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -99,61 +99,66 @@ export const authApi = {
     });
   },
   register: (userData) => 
-    api.post('/auth/register', userData),
-  getMe: () => api.get('/auth/me'),
+    api.post('/auth/register', userData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }),
+  getMe: () => api.get('/users/me'),
   refreshToken: (refreshToken) => 
-    api.post('/auth/refresh-token', { refresh_token: refreshToken }),
+    api.post('/auth/refresh', { refresh_token: refreshToken }),
   forgotPassword: (email) =>
     api.post('/auth/forgot-password', { email }),
   resetPassword: (token, newPassword) =>
     api.post('/auth/reset-password', { token, new_password: newPassword }),
-  verifyResetToken: (token) =>
-    api.get(`/auth/verify-reset-token/${token}`),
   updateProfile: (userData) =>
-    api.put('/auth/profile', userData),
+    api.put('/users/me', userData),
   changePassword: (currentPassword, newPassword) =>
-    api.post('/auth/change-password', { current_password: currentPassword, new_password: newPassword }),
+    api.post('/auth/change-password', { 
+      current_password: currentPassword, 
+      new_password: newPassword 
+    }),
 };
 
 // Courses API
 export const coursesApi = {
-  getAllCourses: (params = {}) => 
-    api.get('/courses', { params }),
+  getCourses: (params = {}) => 
+    api.get('/courses/', { params }),
   getCourse: (courseId) => 
     api.get(`/courses/${courseId}`),
   getCourseModules: (courseId) => 
-    api.get(`/api/courses/${courseId}/modules`),
+    api.get(`/courses/${courseId}/modules`),
   getModule: (courseId, moduleId) => 
-    api.get(`/api/courses/${courseId}/modules/${moduleId}`),
+    api.get(`/courses/${courseId}/modules/${moduleId}`),
   getLesson: (courseId, moduleId, lessonId) =>
-    api.get(`/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`),
+    api.get(`/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`),
   enrollInCourse: (courseId) => 
-    api.post(`/api/enrollments/`, { course_id: courseId }),
+    api.post(`/enrollments/`, { course_id: courseId }),
   getUserEnrollments: () => 
-    api.get('/api/enrollments/me'),
+    api.get('/enrollments/me'),
 };
 
 // Quiz API
 export const quizApi = {
-  submitQuiz: (moduleId, answers) => api.post(`/quizzes/${moduleId}/submit`, { answers }),
+  submitQuiz: (moduleId, answers) => api.post(`/quizzes/submit/${moduleId}`, { answers }),
   getQuiz: (quizId) => 
-    api.get(`/api/quizzes/${quizId}`),
+    api.get(`/quizzes/${quizId}`),
   submitQuizAnswers: (quizId, answers) => 
-    api.post(`/api/quizzes/${quizId}/submit`, { answers }),
+    api.post(`/quizzes/submit/${quizId}`, { answers }),
   getQuizResults: (quizId) => 
-    api.get(`/api/quizzes/${quizId}/results`),
+    api.get(`/quizzes/results/${quizId}`),
   getUserQuizAttempts: (quizId) =>
-    api.get(`/api/quizzes/${quizId}/attempts`),
+    api.get(`/quizzes/${quizId}/attempts`),
 };
 
 // Progress API
 export const progressApi = {
   getUserProgress: (courseId = null) => 
-    api.get('/api/quizzes/user/progress', { params: { course_id: courseId } }),
+    api.get('/quizzes/user/progress', { params: { course_id: courseId } }),
   completeLesson: (lessonId) => 
-    api.post(`/api/lessons/${lessonId}/complete`),
+    api.post(`/lessons/${lessonId}/complete`),
   getLessonProgress: (lessonId) =>
-    api.get(`/api/lessons/${lessonId}/progress`),
+    api.get(`/lessons/${lessonId}/progress`),
 };
 
 // Admin API

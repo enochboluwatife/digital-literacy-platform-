@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin: false,
     isTeacher: false,
     isStudent: false,
+    error: null,
   });
 
   useEffect(() => {
@@ -52,61 +53,89 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      setState(prev => ({ ...prev, loading: true }));
-      const response = await authApi.login(email, password);
+      setState(prev => ({ ...prev, loading: true, error: null }));
+      const response = await authApi.login({ email, password });
       
-      if (response.data?.access_token) {
-        localStorage.setItem('token', response.data.access_token);
-        
-        let userData = response.data.user;
-        if (!userData) {
-          try {
-            const userResponse = await authApi.getMe();
-            userData = userResponse.data;
-          } catch (userError) {
-            console.error('Error fetching user data:', userError);
-            return { success: false, error: 'Failed to get user information' };
-          }
-        }
-        
-        setState({
-          user: userData,
-          loading: false,
-          isAuthenticated: true,
-          isAdmin: userData?.role === 'admin',
-          isTeacher: userData?.role === 'teacher',
-          isStudent: userData?.role === 'student',
-        });
-        
-        return { success: true };
+      if (!response?.data?.access_token) {
+        throw new Error('No access token received from server');
       }
       
-      return { success: false, error: 'Invalid response from server' };
+      const token = response.data.access_token;
+      localStorage.setItem('token', token);
+      
+      // Get user data using the token
+      const userResponse = await authApi.getMe();
+      const userData = userResponse.data;
+      
+      setState({
+        user: userData,
+        loading: false,
+        isAuthenticated: true,
+        isAdmin: userData.role === 'admin',
+        isTeacher: userData.role === 'teacher',
+        isStudent: userData.role === 'student',
+        error: null,
+      });
+      
+      return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-      let errorMessage = 'Login failed. Please try again.';
+      let errorMessage = 'Login failed. Please check your credentials and try again.';
+      
       if (error.response?.data?.detail) {
         if (typeof error.response.data.detail === 'string') {
           errorMessage = error.response.data.detail;
         } else if (Array.isArray(error.response.data.detail)) {
           errorMessage = error.response.data.detail.map(err => err.msg || err).join(', ');
-        } else {
-          errorMessage = 'Invalid login credentials';
         }
       }
+      
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: { 
+          message: errorMessage, 
+          code: error.response?.status || 500 
+        }
+      }));
+      
       return { success: false, error: errorMessage };
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
     }
+  };
+
+  const value = {
+    ...state,
+    login,
   };
 
   const register = async (userData) => {
     try {
-      setState(prev => ({ ...prev, loading: true }));
+      setState(prev => ({ ...prev, loading: true, error: null }));
       const response = await authApi.register(userData);
       
-      if (response.data) {
-        return await login(userData.email, userData.password);
+      if (response?.data) {
+        // After successful registration, log in the user
+        const loginResponse = await authApi.login({ 
+          email: userData.email, 
+          password: userData.password 
+        });
+
+        if (loginResponse?.data?.token) {
+          localStorage.setItem('token', loginResponse.data.token);
+          const userResponse = await authApi.getMe();
+          
+          setState({
+            user: userResponse.data,
+            loading: false,
+            isAuthenticated: true,
+            isAdmin: userResponse.data.role === 'admin',
+            isTeacher: userResponse.data.role === 'teacher',
+            isStudent: userResponse.data.role === 'student',
+            error: null,
+          });
+          
+          return { success: true };
+        }
       }
       
       return { success: false, error: 'Registration failed' };
@@ -129,6 +158,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    try {
+      localStorage.removeItem('token');
+      setState({
+        user: null,
+        loading: false,
+        isAuthenticated: false,
+        isAdmin: false,
+        isTeacher: false,
+        isStudent: false,
+        error: null,
+      });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      setState(prev => ({
+        ...prev,
+        error: { message: 'Error during logout', code: 500 },
+      }));
+    }
     localStorage.removeItem('token');
     setState({
       user: null,

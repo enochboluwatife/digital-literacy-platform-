@@ -55,7 +55,7 @@ const CourseList = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await coursesApi.getAllCourses();
+        const response = await coursesApi.getCourses();
         setCourses(response.data);
         setFilteredCourses(response.data);
       } catch (error) {

@@ -108,7 +108,7 @@ def submit_quiz_answers(
             models.QuizOption.question_id == answer.question_id
         ).first()
         
-        is_correct = selected_option and selected_option.is_correct
+        is_correct = bool(selected_option and selected_option.is_correct)
         
         # Record the attempt
         attempt = models.QuizAttempt(

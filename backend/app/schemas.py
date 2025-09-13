@@ -153,8 +153,8 @@ class EnrollmentBase(BaseModel):
     completed: bool = False
     progress: int = 0  # 0-100
 
-class EnrollmentCreate(EnrollmentBase):
-    pass
+class EnrollmentCreate(BaseModel):
+    course_id: int
 
 class EnrollmentUpdate(BaseModel):
     completed: Optional[bool] = None

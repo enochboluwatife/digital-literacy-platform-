@@ -23,7 +23,8 @@ def create_sample_data():
         admin_user = models.User(
             email="admin@example.com",
             hashed_password=get_password_hash("admin123"),
-            full_name="Admin User",
+            first_name="Admin",
+            last_name="User",
             role=models.UserRole.ADMIN,
             is_active=True
         )
@@ -31,7 +32,8 @@ def create_sample_data():
         student_user = models.User(
             email="student@example.com",
             hashed_password=get_password_hash("student123"),
-            full_name="Student User",
+            first_name="Student",
+            last_name="User",
             role=models.UserRole.STUDENT,
             is_active=True
         )
@@ -44,7 +46,8 @@ def create_sample_data():
             title="Introduction to Digital Literacy",
             description="Learn the fundamentals of digital literacy in this comprehensive course.",
             thumbnail_url="/static/course1.jpg",
-            is_published=True
+            is_published=True,
+            teacher_id=admin_user.id
         )
         db.add(course)
         db.commit()

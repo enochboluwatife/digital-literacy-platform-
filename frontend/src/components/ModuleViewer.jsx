@@ -27,7 +27,7 @@ import {
 import { ArrowBackIcon, ArrowForwardIcon, CheckIcon, TimeIcon } from '@chakra-ui/icons';
 import ReactPlayer from 'react-player';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { coursesApi } from '../services/api';
 
 const ModuleViewer = () => {
   const { courseId, moduleId } = useParams();
@@ -50,45 +50,18 @@ const ModuleViewer = () => {
     const fetchModule = async () => {
       try {
         setLoading(true);
-        // In a real app, this would be an API call to fetch module data
-        // const response = await axios.get(`/api/courses/${courseId}/modules/${moduleId}`);
-        // setModule(response.data);
         
-        // Mock data for demonstration
-        setTimeout(() => {
-          const mockModule = {
-            id: moduleId,
-            title: `Module ${moduleId}`,
-            description: `This is module ${moduleId} of the course.`,
-            content: moduleId % 3 === 0 
-              ? 'This is a text-based module content. It contains important information about the topic.'
-              : moduleId % 3 === 1
-                ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' // Sample video URL
-                : 'quiz',
-            contentType: moduleId % 3 === 0 ? 'text' : moduleId % 3 === 1 ? 'video' : 'quiz',
-            duration: 15,
-            order: parseInt(moduleId),
-            quizQuestions: [
-              {
-                id: 1,
-                question: 'What is the capital of Nigeria?',
-                options: [
-                  { id: 1, text: 'Lagos', isCorrect: false },
-                  { id: 2, text: 'Abuja', isCorrect: true },
-                  { id: 3, text: 'Kano', isCorrect: false },
-                  { id: 4, text: 'Ibadan', isCorrect: false },
-                ],
-              },
-            ],
-          };
-          
-          setModule(mockModule);
-          setNextModule(parseInt(moduleId) + 1);
-          setPrevModule(parseInt(moduleId) > 1 ? parseInt(moduleId) - 1 : null);
-          setProgress((parseInt(moduleId) / 10) * 100); // Mock progress
-          setLoading(false);
-        }, 500);
+        // Fetch module data from API
+        const response = await coursesApi.getModule(courseId, moduleId);
+        const moduleData = response.data;
+        
+        setModule(moduleData);
+        setNextModule(parseInt(moduleId) + 1);
+        setPrevModule(parseInt(moduleId) > 1 ? parseInt(moduleId) - 1 : null);
+        setProgress((parseInt(moduleId) / 10) * 100); // Mock progress for now
+        setLoading(false);
       } catch (err) {
+        console.error('Error fetching module:', err);
         setError('Failed to load module. Please try again.');
         setLoading(false);
         toast({

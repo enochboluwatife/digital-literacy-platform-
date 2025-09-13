@@ -22,7 +22,7 @@ def get_courses(
     if current_user.role == models.UserRole.TEACHER:
         courses = (
             db.query(models.Course)
-            .filter(models.Course.created_by == current_user.id)
+            .filter(models.Course.teacher_id == current_user.id)
             .order_by(models.Course.created_at.desc())
             .offset(skip)
             .limit(limit)
@@ -79,7 +79,7 @@ def get_course(
         raise HTTPException(status_code=404, detail="Course not found")
         
     # Only show unpublished courses to the creator or admin
-    if not db_course.is_published and db_course.created_by != current_user.id and current_user.role != models.UserRole.ADMIN:
+    if not db_course.is_published and db_course.teacher_id != current_user.id and current_user.role != models.UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to view this course"
@@ -101,7 +101,7 @@ def create_course(
         )
     
     # Create the course
-    db_course = models.Course(**course.dict(), created_by=current_user.id)
+    db_course = models.Course(**course.dict(), teacher_id=current_user.id)
     db.add(db_course)
     db.commit()
     db.refresh(db_course)
