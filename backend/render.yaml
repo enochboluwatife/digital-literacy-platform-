@@ -1,12 +1,31 @@
+databases:
+  - name: digital_literacy_db
+    databaseName: digital_literacy
+    user: digital_literacy_user
+    plan: free
+
 services:
   - type: web
     name: digital-literacy-backend
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "./render-build.sh"
     startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    workingDirectory: /backend
     envVars:
       - key: DATABASE_URL
-        value: sqlite:///./digital_literacy.db
+        fromDatabase:
+          name: digital_literacy_db
+          property: connectionString
       - key: SECRET_KEY
-        value: your-secret-key-change-this-in-production
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: FIRST_SUPERUSER_EMAIL
+        value: admin@example.com
+      - key: FIRST_SUPERUSER_PASSWORD
+        value: changeme123
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"  # 24 hours
+      - key: ALGORITHM
+        value: "HS256"
