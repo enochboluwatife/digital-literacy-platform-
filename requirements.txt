@@ -1,0 +1,2 @@
+# This is a pointer to the actual requirements file
+-r backend/requirements.txt

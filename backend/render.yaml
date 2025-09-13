@@ -9,9 +9,8 @@ services:
     name: digital-literacy-backend
     env: python
     plan: free
-    buildCommand: "./render-build.sh"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
-    workingDirectory: /backend
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
