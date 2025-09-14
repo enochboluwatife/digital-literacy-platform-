@@ -1,4 +1,4 @@
-# Use Python 3.11.9 base image
+# Use Python 3.11.9 slim image
 FROM python:3.11.9-slim-bookworm
 
 # Set working directory
@@ -15,25 +15,16 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app
 
-# Install Poetry
+# Install pip and requirements
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir poetry
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy only requirements to cache them in docker layer
-COPY backend/pyproject.toml backend/poetry.lock* ./
-
-# Install dependencies
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --no-root --only main
-
-# Copy the rest of the application
+# Copy the application
 COPY . .
-
-# Install the project
-RUN poetry install --no-interaction --no-ansi --only-root
 
 # Expose the port the app runs on
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

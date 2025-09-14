@@ -10,6 +10,9 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerBuildCommand: docker build -t digital-literacy-backend .
+    dockerRunCommand: docker run -p 8000:8000 --env-file .env digital-literacy-backend
     envVars:
       - key: DATABASE_URL
         fromDatabase:
