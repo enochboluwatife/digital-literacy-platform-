@@ -13,13 +13,13 @@ router = APIRouter(
     tags=["authentication"]
 )
 
-@router.post("/register", response_model=schemas.UserOut)
+@router.post("/register", response_model=schemas.Token)
 def register_user(
     user: schemas.UserCreate,
     db: Session = Depends(get_db)
 ):
     """
-    Register a new user.
+    Register a new user and return an access token.
     """
     db_user = auth.get_user_by_email(db, email=user.email)
     if db_user:
@@ -29,7 +29,21 @@ def register_user(
         )
     
     # Create the user
-    return auth.create_user(db=db, user=user)
+    db_user = auth.create_user(db=db, user=user)
+    
+    # Create access token with user claims
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth.create_access_token(
+        data={
+            "sub": str(db_user.id),
+            "email": db_user.email,
+            "role": db_user.role,
+            "user_id": db_user.id
+        },
+        expires_delta=access_token_expires
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/login", response_model=schemas.Token)
 def login_for_access_token(
@@ -53,10 +67,15 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Create access token with 30 minutes expiration
+    # Create access token with user claims
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
-        data={"sub": str(user.id)},
+        data={
+            "sub": str(user.id),
+            "email": user.email,
+            "role": user.role,
+            "user_id": user.id
+        },
         expires_delta=access_token_expires
     )
     
@@ -113,10 +132,15 @@ def refresh_token(
     """
     Refresh access token.
     """
-    # In a real app, you might want to implement token refresh logic here
+    # Create a new access token with user claims
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
-        data={"sub": str(current_user.id)},
+        data={
+            "sub": str(current_user.id),
+            "email": current_user.email,
+            "role": current_user.role,
+            "user_id": current_user.id
+        },
         expires_delta=access_token_expires
     )
     

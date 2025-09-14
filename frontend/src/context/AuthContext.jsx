@@ -114,32 +114,31 @@ export const AuthProvider = ({ children }) => {
       setState(prev => ({ ...prev, loading: true, error: null }));
       const response = await authApi.register(userData);
       
-      if (response?.data) {
-        // After successful registration, log in the user
-        const loginResponse = await authApi.login({ 
-          email: userData.email, 
-          password: userData.password 
+      if (response?.data?.access_token) {
+        // Save the token from registration response
+        const token = response.data.access_token;
+        localStorage.setItem('token', token);
+        
+        // Set the default authorization header
+        authApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        // Get user details
+        const userResponse = await authApi.getMe();;
+        
+        setState({
+          user: userResponse.data,
+          loading: false,
+          isAuthenticated: true,
+          isAdmin: userResponse.data.role === 'admin',
+          isTeacher: userResponse.data.role === 'teacher',
+          isStudent: userResponse.data.role === 'student',
+          error: null,
         });
-
-        if (loginResponse?.data?.access_token) {
-          localStorage.setItem('token', loginResponse.data.access_token);
-          const userResponse = await authApi.getMe();
-          
-          setState({
-            user: userResponse.data,
-            loading: false,
-            isAuthenticated: true,
-            isAdmin: userResponse.data.role === 'admin',
-            isTeacher: userResponse.data.role === 'teacher',
-            isStudent: userResponse.data.role === 'student',
-            error: null,
-          });
-          
-          return { success: true };
-        }
+        
+        return { success: true };
       }
       
-      return { success: false, error: 'Registration failed' };
+      return { success: false, error: 'Registration failed - no token received' };
     } catch (error) {
       console.error('Registration error:', error);
       let errorMessage = 'Registration failed. Please try again.';

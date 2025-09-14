@@ -104,7 +104,7 @@ export const authApi = {
         'Content-Type': 'application/json',
       },
     }),
-  getMe: () => api.get('/users/me'),
+  getMe: () => api.get('/auth/me'),  // This is correct, matches backend route
   refreshToken: (refreshToken) => 
     api.post('/auth/refresh', { refresh_token: refreshToken }),
   forgotPassword: (email) =>
@@ -112,7 +112,7 @@ export const authApi = {
   resetPassword: (token, newPassword) =>
     api.post('/auth/reset-password', { token, new_password: newPassword }),
   updateProfile: (userData) =>
-    api.put('/users/me', userData),
+    api.put('/auth/me', userData),  // Updated to use correct endpoint
   changePassword: (currentPassword, newPassword) =>
     api.post('/auth/change-password', { 
       current_password: currentPassword, 

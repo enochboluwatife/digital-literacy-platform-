@@ -29,7 +29,7 @@ class UserOut(UserBase):
     updated_at: Optional[datetime] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserUpdate(BaseModel):
     email: Optional[str] = None
@@ -67,7 +67,7 @@ class CourseOut(CourseBase):
     enrolled_users_count: Optional[int] = 0
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Module related schemas
 class ModuleBase(BaseModel):
@@ -99,7 +99,7 @@ class ModuleOut(ModuleBase):
     updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Quiz related schemas
 class QuizOptionBase(BaseModel):
@@ -114,7 +114,7 @@ class QuizOptionOut(QuizOptionBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class QuizQuestionBase(BaseModel):
     question: str
@@ -130,7 +130,7 @@ class QuizQuestionOut(QuizQuestionBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class QuizAnswer(BaseModel):
     question_id: int
@@ -166,7 +166,7 @@ class EnrollmentOut(EnrollmentBase):
     completed_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Progress tracking
 class UserProgress(BaseModel):
@@ -201,19 +201,19 @@ class UserProgressOut(BaseModel):
     enrollments: List[EnrollmentOut] = []
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ModuleWithContent(ModuleOut):
     quiz_questions: List[QuizQuestionOut] = []
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CourseWithModules(CourseOut):
     modules: List[ModuleOut] = []
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Search and filter
 class SearchQuery(BaseModel):

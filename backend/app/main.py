@@ -30,7 +30,7 @@ allowed_origins = [
     "http://127.0.0.1:3001",
     "http://127.0.0.1:5173",
     "https://digital-literacy-platform.vercel.app",
-    
+    "https://digital-literacy-platform.onrender.com"
 ]
 
 # Add frontend URL from environment if it exists
