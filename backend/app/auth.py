@@ -47,19 +47,24 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[models
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
+    
+    # Set expiration time
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     
+    # Convert expiration time to Unix timestamp (integer)
+    to_encode.update({"exp": int(expire.timestamp())})
+    
     # Ensure we have the required 'sub' claim which is standard in JWT
     if 'sub' not in to_encode and 'email' in to_encode:
         to_encode['sub'] = to_encode['email']
     
-    to_encode.update({"exp": expire})
-    
     # Convert any non-JSON-serializable data to strings
     for key, value in to_encode.items():
+        if key == 'exp':
+            continue  # Skip 'exp' as we've already handled it
         if isinstance(value, (datetime, timedelta)):
             to_encode[key] = str(value)
         elif hasattr(value, 'value') and hasattr(value, '__class__') and hasattr(value, '__module__'):

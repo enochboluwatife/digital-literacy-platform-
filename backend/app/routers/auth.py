@@ -31,19 +31,31 @@ def register_user(
     # Create the user
     db_user = auth.create_user(db=db, user=user)
     
-    # Create access token with user claims
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = auth.create_access_token(
-        data={
-            "sub": str(db_user.id),
-            "email": db_user.email,
-            "role": db_user.role,
-            "user_id": db_user.id
-        },
-        expires_delta=access_token_expires
-    )
-    
-    return {"access_token": access_token, "token_type": "bearer"}
+    try:
+        # Create access token with user claims
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = auth.create_access_token(
+            data={
+                "sub": db_user.email,  # Standard JWT practice is to use email as sub
+                "email": db_user.email,
+                "role": db_user.role,
+                "user_id": db_user.id
+            },
+            expires_delta=access_token_expires
+        )
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error creating access token during registration: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="User created but could not generate access token"
+        )
 
 @router.post("/login", response_model=schemas.Token)
 def login_for_access_token(
@@ -67,22 +79,31 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Create access token with user claims
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = auth.create_access_token(
-        data={
-            "sub": str(user.id),
-            "email": user.email,
-            "role": user.role,
-            "user_id": user.id
-        },
-        expires_delta=access_token_expires
-    )
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    try:
+        # Create access token with user claims
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = auth.create_access_token(
+            data={
+                "sub": user.email,  # Standard JWT practice is to use email as sub
+                "email": user.email,
+                "role": user.role,
+                "user_id": user.id
+            },
+            expires_delta=access_token_expires
+        )
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error creating access token: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create access token"
+        )
 
 @router.get("/me", response_model=schemas.UserOut)
 async def read_users_me(
@@ -127,27 +148,37 @@ async def read_users_me(
 
 @router.post("/refresh")
 def refresh_token(
-    current_user: models.User = Depends(auth.get_current_active_user)
+    current_user: models.User = Depends(auth.get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     """
     Refresh access token.
     """
-    # Create a new access token with user claims
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = auth.create_access_token(
-        data={
-            "sub": str(current_user.id),
-            "email": current_user.email,
-            "role": current_user.role,
-            "user_id": current_user.id
-        },
-        expires_delta=access_token_expires
-    )
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    try:
+        # Create a new access token with user claims
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = auth.create_access_token(
+            data={
+                "sub": current_user.email,  # Use email as sub (standard JWT practice)
+                "email": current_user.email,
+                "role": current_user.role,
+                "user_id": current_user.id
+            },
+            expires_delta=access_token_expires
+        )
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error refreshing token: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not refresh token"
+        )
 
 @router.post("/logout")
 def logout():
