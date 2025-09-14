@@ -181,24 +181,13 @@ export const fileApi = {
 // Admin API
 export const adminApi = {
   // User management
-  getUsers: (params = {}) => api.get('/admin/users', { params }),
-  getUser: (userId) => api.get(`/admin/users/${userId}`),
-  createUser: (userData) => api.post('/admin/users', userData),
-  updateUser: (userId, userData) => api.put(`/admin/users/${userId}`, userData),
-  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
+  ...createApiModule('/admin/users'),
   
   // Course management
-  getCourses: (params = {}) => api.get('/admin/courses', { params }),
-  createCourse: (courseData) => api.post('/admin/courses', courseData),
-  updateCourse: (courseId, courseData) => api.put(`/admin/courses/${courseId}`, courseData),
-  deleteCourse: (courseId) => api.delete(`/admin/courses/${courseId}`),
+  ...createApiModule('/admin/courses'),
   
   // Enrollment management
-  getEnrollments: (params = {}) => api.get('/admin/enrollments', { params }),
-  createEnrollment: (enrollmentData) => api.post('/admin/enrollments', enrollmentData),
-  updateEnrollment: (enrollmentId, enrollmentData) => 
-    api.put(`/admin/enrollments/${enrollmentId}`, enrollmentData),
-  deleteEnrollment: (enrollmentId) => api.delete(`/admin/enrollments/${enrollmentId}`),
+  ...createApiModule('/admin/enrollments'),
   
   // Analytics
   getStats: () => api.get('/admin/stats'),
