@@ -142,12 +142,13 @@ export const authApi = {
 // Courses API
 export const coursesApi = {
   ...createApiModule('/courses'),
+  getCourses: (params = {}) => api.get('/courses', { params }),
   getModules: (courseId) => api.get(`/courses/${courseId}/modules`),
   getModule: (courseId, moduleId) => api.get(`/courses/${courseId}/modules/${moduleId}`),
   getLesson: (courseId, moduleId, lessonId) => 
     api.get(`/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`),
   enroll: (courseId) => api.post('/enrollments', { course_id: courseId }),
-  getEnrollments: () => api.get('/enrollments/me'),
+  getEnrollments: () => api.get('/enrollments'),
 };
 
 // Quiz API
