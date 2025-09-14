@@ -21,35 +21,25 @@ fi
 echo "=== Installing requirements ==="
 pip install --no-cache-dir -r requirements.txt
 
-# Install python-jose with cryptography explicitly
-echo "=== Installing python-jose with cryptography ==="
-pip install --no-cache-dir "python-jose[cryptography]"
-
 # Verify installations
 echo "=== Verifying installations ==="
-pip freeze | grep -E 'fastapi|uvicorn|sqlalchemy|python-jose|pydantic|psycopg2|httpx|PyJWT|dnspython|cryptography'
+pip freeze | grep -E 'fastapi|uvicorn|sqlalchemy|pydantic|psycopg2|httpx|PyJWT|dnspython|cryptography'
 
-# Check if python_jose is importable
-echo "=== Checking python_jose import ==="
+# Check if PyJWT is importable
+echo "=== Checking PyJWT import ==="
 python -c "
 import sys
 try:
-    from jose import jwt
-    from jose.exceptions import JWTError
-    print('SUCCESS: python_jose module imported successfully')
+    import jwt
+    from jwt import PyJWTError
+    print('SUCCESS: PyJWT module imported successfully')
     print(f'JWT version: {jwt.__version__ if hasattr(jwt, "__version__") else "Not available"}')
 except ImportError as e:
-    print(f'ERROR: Failed to import python_jose: {e}')
-    print('Trying alternative import...')
-    try:
-        import python_jose.jwt as pyjwt
-        from python_jose.exceptions import JWTError
-        print('SUCCESS: python_jose.jwt imported successfully')
-    except ImportError as e2:
-        print(f'ERROR: Alternative import also failed: {e2}')
-        print('\nInstalled packages:')
-        !pip list
-        sys.exit(1)
+    print(f'ERROR: Failed to import PyJWT: {e}')
+    print('\nInstalled packages:')
+    import subprocess
+    subprocess.run(['pip', 'list'])
+    sys.exit(1)
 "
 
 echo "=== Build completed successfully ==="
