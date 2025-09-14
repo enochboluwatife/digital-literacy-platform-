@@ -10,8 +10,8 @@ services:
     env: python
     plan: free
     pythonVersion: "3.9"
-    buildCommand: "pip install --no-deps -r requirements.txt"
-    startCommand: "cd /opt/render/project/src/backend && PYTHONPATH=/opt/render/project/src uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -24,8 +24,4 @@ services:
       - key: FIRST_SUPERUSER_EMAIL
         value: admin@example.com
       - key: FIRST_SUPERUSER_PASSWORD
-        value: changeme123
-      - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: "1440"  # 24 hours
-      - key: ALGORITHM
-        value: "HS256"
+        generateValue: true
