@@ -18,23 +18,25 @@ allowed_origins = [
     "http://localhost:3000",
     "http://localhost:3001", 
     "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "http://127.0.0.1:5175"
+    "https://digital-literacy-platform.vercel.app",
+    
 ]
 
-# Add production frontend URL if available
+# Add frontend URL from environment if it exists
 frontend_url = os.getenv("FRONTEND_URL")
 if frontend_url:
-    allowed_origins.append(frontend_url)
+    if "," in frontend_url:
+        allowed_origins.extend([url.strip() for url in frontend_url.split(",")])
+    else:
+        allowed_origins.append(frontend_url.strip())
 
+# For production, you might want to be more restrictive
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=allowed_origins if os.getenv("ENVIRONMENT") != "production" else ["https://your-vercel-app.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
