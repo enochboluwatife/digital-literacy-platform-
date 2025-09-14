@@ -7,12 +7,11 @@ databases:
 services:
   - type: web
     name: digital-literacy-backend
-    env: docker
+    env: python
     plan: free
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
-    dockerBuildCommand: docker build -t digital-literacy-backend .
-    dockerRunCommand: docker run -p 8000:8000 --env-file .env digital-literacy-backend
+    pythonVersion: "3.11.11"
+    buildCommand: "pip install --upgrade pip && pip install -r backend/requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
