@@ -1,5 +1,5 @@
-# Use Python 3.11 base image
-FROM python:3.11-slim
+# Use Python 3.11.9 base image
+FROM python:3.11.9-slim-bookworm
 
 # Set working directory
 WORKDIR /app
