@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from '../services/api';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, redirectPath) => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
@@ -67,7 +68,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', access_token);
         
         // Update axios default headers with the new token
-        authApi.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
         
         try {
           // Get user details using the token
@@ -186,7 +187,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', access_token);
         
         // Update axios default headers with the new token
-        authApi.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
         
         try {
           // Get user details using the token
