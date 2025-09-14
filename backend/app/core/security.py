@@ -35,15 +35,27 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Create a JWT access token."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
+    
+    # Ensure we have the required 'sub' claim which is standard in JWT
+    if 'sub' not in to_encode and 'email' in to_encode:
+        to_encode['sub'] = to_encode['email']
+    
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    
+    # Convert any non-JSON-serializable data to strings
+    for key, value in to_encode.items():
+        if isinstance(value, (datetime, timedelta)):
+            to_encode[key] = str(value)
+        elif hasattr(value, 'value') and hasattr(value, '__class__') and hasattr(value, '__module__'):
+            # Handle enums by getting their value
+            to_encode[key] = value.value if hasattr(value, 'value') else str(value)
+    
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -57,19 +69,35 @@ async def get_current_user(
     )
     
     try:
+        # Decode the JWT token
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        
+        # Get the subject (email) from the token
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-        token_data = schemas.TokenData(email=email)
-    except PyJWTError:
+            
+        # Create TokenData with the payload
+        token_data = schemas.TokenData(
+            sub=email,
+            email=email,
+            user_id=payload.get("user_id"),
+            role=payload.get("role")
+        )
+        
+        # Get user from database
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if user is None:
+            raise credentials_exception
+            
+        return user
+        
+    except PyJWTError as e:
+        print(f"JWT Error: {str(e)}")
         raise credentials_exception
-    
-    user = db.query(models.User).filter(models.User.email == email).first()
-    if user is None:
+    except Exception as e:
+        print(f"Unexpected error in get_current_user: {str(e)}")
         raise credentials_exception
-    
-    return user
 
 async def get_current_active_user(
     current_user: models.User = Depends(get_current_user)

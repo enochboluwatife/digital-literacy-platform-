@@ -183,9 +183,13 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
+    sub: Optional[str] = None  # Will store the email as subject
     email: Optional[str] = None
     user_id: Optional[int] = None
-    role: Optional[UserRole] = None
+    role: Optional[str] = None  # Store role as string for JWT compatibility
+    
+    class Config:
+        from_attributes = True
 
 # Response models
 class UserProgressOut(BaseModel):
