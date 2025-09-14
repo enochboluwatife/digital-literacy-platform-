@@ -5,19 +5,19 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        'fastapi>=0.104.1',
-        'uvicorn[standard]>=0.24.0',
-        'SQLAlchemy>=2.0.23',
-        'alembic>=1.12.1',
-        'python-jose[cryptography]>=3.3.0',
-        'passlib[bcrypt]>=1.7.4',
-        'python-multipart>=0.0.6',
-        'email-validator>=2.1.0',
-        'python-dotenv>=1.0.0',
-        'psycopg2-binary>=2.9.10',
-        'pydantic[email]>=2.5.1',
-        'httpx>=0.25.1',
-        'aiofiles>=23.2.1',
-        'pydantic-settings>=2.1.0'
+        'fastapi==0.104.1',
+        'uvicorn[standard]==0.24.0',
+        'pydantic==1.10.13',
+        'pydantic-settings==1.10.13',
+        'SQLAlchemy==2.0.23',
+        'alembic==1.12.1',
+        'python-jose[cryptography]==3.3.0',
+        'passlib[bcrypt]==1.7.4',
+        'python-multipart==0.0.6',
+        'email-validator==2.1.0',
+        'python-dotenv==1.0.0',
+        'psycopg2-binary==2.9.10',
+        'httpx==0.25.1',
+        'aiofiles==23.2.1'
     ]
 )
