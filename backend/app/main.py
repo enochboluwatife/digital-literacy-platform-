@@ -33,10 +33,10 @@ if frontend_url:
     else:
         allowed_origins.append(frontend_url.strip())
 
-# For production, you might want to be more restrictive
+# For production, use the allowed_origins list which includes the Vercel URL
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins if os.getenv("ENVIRONMENT") != "production" else ["https://your-vercel-app.vercel.app"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
