@@ -45,15 +45,28 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[models
     print(f"DEBUG: Authentication successful for user: {user.email}")
     return user
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire, "sub": str(to_encode.get("sub"))})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    
+    # Ensure we have the required 'sub' claim which is standard in JWT
+    if 'sub' not in to_encode and 'email' in to_encode:
+        to_encode['sub'] = to_encode['email']
+    
+    to_encode.update({"exp": expire})
+    
+    # Convert any non-JSON-serializable data to strings
+    for key, value in to_encode.items():
+        if isinstance(value, (datetime, timedelta)):
+            to_encode[key] = str(value)
+        elif hasattr(value, 'value') and hasattr(value, '__class__') and hasattr(value, '__module__'):
+            # Handle enums by getting their value
+            to_encode[key] = value.value if hasattr(value, 'value') else str(value)
+    
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -64,19 +77,37 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = schemas.TokenData(username=username)
-    except PyJWTError:
-        raise credentials_exception
     
-    user = get_user(db, user_id=token_data.user_id)
-    if user is None:
+    try:
+        # Decode the JWT token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        
+        # Get the subject (email) from the token
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+            
+        # Create TokenData with the payload
+        token_data = schemas.TokenData(
+            sub=email,
+            email=email,
+            user_id=payload.get("user_id"),
+            role=payload.get("role")
+        )
+        
+        # Get user from database
+        user = get_user_by_email(db, email=email)
+        if user is None:
+            raise credentials_exception
+            
+        return user
+        
+    except PyJWTError as e:
+        print(f"JWT Error in auth.get_current_user: {str(e)}")
         raise credentials_exception
-    return user
+    except Exception as e:
+        print(f"Unexpected error in auth.get_current_user: {str(e)}")
+        raise credentials_exception
 
 async def get_current_active_user(
     current_user: models.User = Depends(get_current_user),
