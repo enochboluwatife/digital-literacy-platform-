@@ -100,6 +100,69 @@ def update_user(
     db.refresh(db_user)
     return db_user
 
+# Quiz Question Management
+@router.post("/modules/{module_id}/questions", response_model=schemas.QuizQuestionOut, status_code=status.HTTP_201_CREATED)
+def create_quiz_question(
+    module_id: int,
+    question: schemas.QuizQuestionCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_admin_user)
+):
+    """Create a new quiz question for a module (admin only)"""
+    # Verify module exists
+    module = db.query(models.Module).filter(models.Module.id == module_id).first()
+    if not module:
+        raise HTTPException(status_code=404, detail="Module not found")
+    
+    db_question = models.QuizQuestion(**question.dict(), module_id=module_id)
+    db.add(db_question)
+    db.commit()
+    db.refresh(db_question)
+    return db_question
+
+@router.post("/questions/{question_id}/options", response_model=schemas.QuizOptionOut, status_code=status.HTTP_201_CREATED)
+def create_quiz_option(
+    question_id: int,
+    option: schemas.QuizOptionCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_admin_user)
+):
+    """Create a new quiz option for a question (admin only)"""
+    # Verify question exists
+    question = db.query(models.QuizQuestion).filter(models.QuizQuestion.id == question_id).first()
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    
+    db_option = models.QuizOption(**option.dict(), question_id=question_id)
+    db.add(db_option)
+    db.commit()
+    db.refresh(db_option)
+    return db_option
+
+# Enrollment Management
+@router.post("/enrollments", status_code=status.HTTP_201_CREATED)
+def create_enrollment(
+    user_id: int,
+    course_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_admin_user)
+):
+    """Create enrollment for a user in a course (admin only)"""
+    # Check if enrollment already exists
+    existing = db.query(models.Enrollment).filter(
+        models.Enrollment.user_id == user_id,
+        models.Enrollment.course_id == course_id
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="User already enrolled in this course")
+    
+    enrollment = models.Enrollment(user_id=user_id, course_id=course_id)
+    db.add(enrollment)
+    db.commit()
+    db.refresh(enrollment)
+    return {"message": "Enrollment created successfully"}
+
 # Analytics endpoints
 @router.get("/analytics/overview")
 def get_analytics_overview(
