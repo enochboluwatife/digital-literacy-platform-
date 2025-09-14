@@ -47,7 +47,7 @@ def create_module(
     course_id: int,
     module: schemas.ModuleCreate,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_active_user)
+    current_user: models.User = Depends(get_current_admin_user)
 ):
     """Create a new module within a course (admin only)"""
     # Verify course exists

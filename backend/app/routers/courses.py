@@ -127,6 +127,23 @@ def update_course(
     db.refresh(db_course)
     return db_course
 
+@router.post("/{course_id}/modules", response_model=schemas.ModuleOut)
+def create_module(
+    course_id: int,
+    module: schemas.ModuleCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_active_user)
+):
+    """Create a new module within a course (admin and teachers only)"""
+    # Check permissions and get the course
+    db_course = check_course_permission(db, course_id, current_user)
+    
+    db_module = models.Module(**module.dict(), course_id=course_id)
+    db.add(db_module)
+    db.commit()
+    db.refresh(db_module)
+    return db_module
+
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_course(
     course_id: int,
