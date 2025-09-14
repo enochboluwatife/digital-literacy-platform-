@@ -1,0 +1,48 @@
+[[package]]
+name = "fastapi"
+version = "0.110.0"
+description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
+category = "main"
+optional = false
+python-versions = "^3.8"
+
+[package.dependencies]
+anyio = ">=3.4.0,<5.0.0"
+pydantic = ">=2.5.0,<3.0.0"
+starlette = ">=0.27.0,<0.37.0"
+typing-extensions = ">=4.5.0,<5.0.0"
+
+[[package]]
+name = "pydantic"
+version = "2.6.0"
+description = "Data validation and settings management using Python type hints."
+category = "main"
+optional = false
+python-versions = "<4.0,>=3.8"
+
+[package.dependencies]
+annotated-types = ">=0.4.0"
+pydantic-core = ">=2.16.1,<2.17.0"
+typing-extensions = ">=4.6.1,!=4.7.0,<5.0.0"
+
+[package.extras]
+dotenv = ["python-dotenv (>=1.0.0)"]
+
+[[package]]
+name = "uvicorn"
+version = "0.27.0"
+description = "The lightning-fast ASGI server."
+category = "main"
+optional = false
+python-versions = "^3.8"
+
+[package.dependencies]
+click = "^8.0.0"
+h11 = ">=0.8"
+
+[package.extras]
+standard = ["colorama (>=0.4.0)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (!=0.15.0,!=0.15.1,>=0.14.0)", "watchfiles (>=0.13)", "websockets (>=10.0)"]
+
+[metadata]
+python-versions = "^3.8"
+content-hash = "a1b2c3d4e5f6g7h8i9j0"

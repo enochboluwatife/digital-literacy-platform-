@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "digital-literacy-backend"
+version = "0.1.0"
+description = "Digital Literacy Platform Backend"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.110.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+pydantic = "^2.6.0"
+pydantic-settings = "^2.1.0"
+SQLAlchemy = "^2.0.23"
+alembic = "^1.12.1"
+psycopg2-binary = "^2.9.10"
+PyJWT = "^2.8.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.6"
+email-validator = "^2.1.0"
+python-dotenv = "^1.0.0"
+httpx = "^0.25.1"
+aiofiles = "^23.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "uvicorn app.main:app --host 0.0.0.0 --port 8000"
