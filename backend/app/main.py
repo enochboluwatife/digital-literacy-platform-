@@ -8,6 +8,14 @@ from .routers import auth, users, courses, quizzes, enrollments, modules
 from .api import admin
 import os
 
+# Database dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
 
