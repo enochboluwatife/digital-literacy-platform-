@@ -6,7 +6,7 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist",
-        "buildCommand": "cd frontend && npm install && npm run build"
+        "buildCommand": "cd frontend && npm install -g terser && npm install && npm run build"
       }
     }
   ],
@@ -18,5 +18,5 @@
   "env": {
     "VITE_API_URL": "https://digital-literacy-platform.onrender.com/api"
   },
-  "buildCommand": "cd frontend && npm install && npm run build"
+  "buildCommand": "cd frontend && npm install -g terser && npm install && npm run build"
 }
