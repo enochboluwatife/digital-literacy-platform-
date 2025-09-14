@@ -19,8 +19,5 @@ setup(
         'httpx>=0.25.1',
         'aiofiles>=23.2.1',
         'pydantic-settings>=2.1.0'
-    ],
-    dependency_links=[
-        'https://download.pytorch.org/whl/torch_stable.html'
     ]
 )
