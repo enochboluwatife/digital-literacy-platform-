@@ -25,7 +25,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against a hash."""
@@ -58,7 +58,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-async def get_current_user(
+def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> models.User:
@@ -132,7 +132,7 @@ async def get_current_user(
         print(f"Unexpected error in get_current_user: {str(e)}")
         raise credentials_exception
 
-async def get_current_active_user(
+def get_current_active_user(
     current_user: models.User = Depends(get_current_user)
 ) -> models.User:
     """Get the current active user."""
@@ -140,7 +140,7 @@ async def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-async def get_current_admin_user(
+def get_current_admin_user(
     current_user: models.User = Depends(get_current_user)
 ) -> models.User:
     """Get the current admin user."""
