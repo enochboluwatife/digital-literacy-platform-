@@ -8,13 +8,22 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
+    esbuild: {
+      minify: false // Disable esbuild minification
+    },
     build: {
-      minify: 'esbuild', // Use esbuild for minification instead of Terser
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true
+        }
+      },
       rollupOptions: {
         output: {
-          manualChunks: undefined, // Disable code splitting for now
-        },
-      },
+          manualChunks: undefined // Disable code splitting for now
+        }
+      }
     },
     plugins: [
       react({
