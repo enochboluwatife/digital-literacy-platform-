@@ -4,16 +4,19 @@
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { 
-        "distDir": "dist"
+      "config": {
+        "distDir": "dist",
+        "buildCommand": "cd frontend && npm install && npm run build"
       }
     }
   ],
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/frontend/dist/index.html" }
+    { "src": "/(.*)", "dest": "/frontend/dist/$1" },
+    { "src": "/", "dest": "/frontend/dist/index.html" }
   ],
   "env": {
     "VITE_API_URL": "https://digital-literacy-platform.onrender.com/api"
-  }
+  },
+  "buildCommand": "cd frontend && npm install && npm run build"
 }
