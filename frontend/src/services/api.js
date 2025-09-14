@@ -173,11 +173,36 @@ const createFileUploader = (fieldName, endpoint) => (file, onProgress) => {
 export const fileApi = {
   upload: createFileUploader('file', '/files/upload'),
   uploadImage: createFileUploader('image', '/files/upload/image'),
-  uploadDocument: createFileUploader('document', '/files/upload/document'),
-  uploadVideo: createFileUploader('video', '/files/upload/video'),
   get: (fileId) => api.get(`/files/${fileId}`),
   getAll: (params = {}) => api.get('/files', { params }),
   delete: (fileId) => api.delete(`/files/${fileId}`),
+};
+
+// Admin API
+export const adminApi = {
+  // User management
+  getUsers: (params = {}) => api.get('/admin/users', { params }),
+  getUser: (userId) => api.get(`/admin/users/${userId}`),
+  createUser: (userData) => api.post('/admin/users', userData),
+  updateUser: (userId, userData) => api.put(`/admin/users/${userId}`, userData),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
+  
+  // Course management
+  getCourses: (params = {}) => api.get('/admin/courses', { params }),
+  createCourse: (courseData) => api.post('/admin/courses', courseData),
+  updateCourse: (courseId, courseData) => api.put(`/admin/courses/${courseId}`, courseData),
+  deleteCourse: (courseId) => api.delete(`/admin/courses/${courseId}`),
+  
+  // Enrollment management
+  getEnrollments: (params = {}) => api.get('/admin/enrollments', { params }),
+  createEnrollment: (enrollmentData) => api.post('/admin/enrollments', enrollmentData),
+  updateEnrollment: (enrollmentId, enrollmentData) => 
+    api.put(`/admin/enrollments/${enrollmentId}`, enrollmentData),
+  deleteEnrollment: (enrollmentId) => api.delete(`/admin/enrollments/${enrollmentId}`),
+  
+  // Analytics
+  getStats: () => api.get('/admin/stats'),
+  getActivityLogs: (params = {}) => api.get('/admin/activity-logs', { params }),
 };
 
 // Response Handlers
