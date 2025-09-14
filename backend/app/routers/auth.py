@@ -3,10 +3,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from typing import Optional
+import logging
 
 from .. import models, schemas, auth
 from ..database import get_db
 from ..config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/auth",
