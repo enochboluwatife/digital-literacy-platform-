@@ -24,10 +24,14 @@ app = FastAPI(title="Digital Literacy Platform API", version="1.0.0")
 # CORS middleware configuration
 def get_allowed_origins():
     """Get allowed origins from environment variable with fallback to defaults."""
-    # Default allowed origins for development
+    # Default allowed origins for development and production
     default_origins = [
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://localhost:5173",  # Vite dev server
+        "https://digital-literacy-platform.vercel.app",
+        "https://digital-literacy-platform-*.vercel.app",  # For preview deployments
+        "https://digital-literacy-platform-git-*.vercel.app",  # For PR previews
         "http://localhost:5173",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
