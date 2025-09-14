@@ -82,9 +82,9 @@ class ModuleBase(BaseModel):
 class ModuleCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    content: Optional[str] = None
+    content: str = ""
     content_type: str = "text"
-    duration: int = 0
+    duration: Optional[int] = 0
     order_index: int = 0
     is_published: bool = True
 

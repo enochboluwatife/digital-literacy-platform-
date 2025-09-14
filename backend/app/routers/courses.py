@@ -138,7 +138,12 @@ def create_module(
     # Check permissions and get the course
     db_course = check_course_permission(db, course_id, current_user)
     
-    db_module = models.Module(**module.dict(), course_id=course_id)
+    module_data = module.dict()
+    # Map order_index to order field for database model
+    if 'order_index' in module_data:
+        module_data['order'] = module_data.pop('order_index')
+    
+    db_module = models.Module(**module_data, course_id=course_id)
     db.add(db_module)
     db.commit()
     db.refresh(db_module)
