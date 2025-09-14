@@ -18,17 +18,12 @@ pip install wheel
 echo "=== Installing requirements ==="
 pip install -r requirements.txt
 
-# Explicitly install python-jose with cryptography
-echo "=== Installing python-jose with cryptography ==="
-pip install "python-jose[cryptography]>=3.3.0"
-pip install "jose>=1.0.0"
-
 # Verify installations
 echo "=== Verifying installations ==="
-pip freeze | grep -E 'fastapi|uvicorn|sqlalchemy|python-jose|jose|pydantic|psycopg2|httpx'
+pip freeze | grep -E 'fastapi|uvicorn|sqlalchemy|python-jose|pydantic|psycopg2|httpx'
 
-# Check if jose is importable
-echo "=== Checking jose import ==="
-python -c "from jose import jwt; from jose.exceptions import JWTError; print('JWT module imported successfully')"
+# Check if python_jose is importable
+echo "=== Checking python_jose import ==="
+python -c "from python_jose import jwt; from python_jose.exceptions import JWTError; print('python_jose module imported successfully')"
 
 echo "=== Build completed successfully ==="
