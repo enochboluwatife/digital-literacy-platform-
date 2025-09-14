@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from jose import JWTError, jwt
+import jwt
+from jwt import PyJWTError
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -60,7 +61,8 @@ async def get_current_user(
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-    except JWTError:
+        token_data = schemas.TokenData(email=email)
+    except PyJWTError:
         raise credentials_exception
     
     user = db.query(models.User).filter(models.User.email == email).first()
