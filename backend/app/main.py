@@ -70,7 +70,7 @@ app.include_router(courses.router, prefix="/api")
 app.include_router(quizzes.router, prefix="/api")
 app.include_router(enrollments.router, prefix="/api")
 app.include_router(modules.router, prefix="/api")
-app.include_router(admin.router)
+app.include_router(admin.router, prefix="")
 
 # Root endpoint
 @app.get("/")
