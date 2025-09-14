@@ -16,10 +16,11 @@ from ..database import get_db
 # Load environment variables
 load_dotenv()
 
-# Security configurations
-SECRET_KEY = "your-secret-key-here-change-in-production"  # Fixed for consistency
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 8  # 8 days
+# Security configurations - Import from config
+from .config import settings
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -52,9 +53,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     for key, value in to_encode.items():
         if isinstance(value, (datetime, timedelta)):
             to_encode[key] = str(value)
-        elif hasattr(value, 'value') and hasattr(value, '__class__') and hasattr(value, '__module__'):
+        elif hasattr(value, 'value'):
             # Handle enums by getting their value
-            to_encode[key] = value.value if hasattr(value, 'value') else str(value)
+            to_encode[key] = value.value
+        elif not isinstance(value, (str, int, float, bool, list, dict)):
+            to_encode[key] = str(value)
     
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 

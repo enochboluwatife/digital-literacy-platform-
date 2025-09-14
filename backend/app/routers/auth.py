@@ -101,7 +101,7 @@ def login_for_access_token(
             data={
                 "sub": user.email,  # Standard JWT practice is to use email as sub
                 "email": user.email,
-                "role": user.role,
+                "role": user.role.value if hasattr(user.role, 'value') else str(user.role),
                 "user_id": user.id
             },
             expires_delta=access_token_expires
