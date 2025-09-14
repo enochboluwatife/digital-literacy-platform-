@@ -34,6 +34,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3001",
     ]
     
+    # Pydantic settings config
     class Config:
         case_sensitive = True
 
