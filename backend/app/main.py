@@ -21,34 +21,45 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Digital Literacy Platform API", version="1.0.0")
 
-# CORS middleware - allow production domains
-allowed_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001", 
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://127.0.0.1:5173",
-    "https://digital-literacy-platform.vercel.app",
-    "https://digital-literacy-platform.onrender.com"
-]
+# CORS middleware configuration
+def get_allowed_origins():
+    """Get allowed origins from environment variable with fallback to defaults."""
+    # Default allowed origins for development
+    default_origins = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:5173",
+        "https://digital-literacy-platform.vercel.app",
+        "https://digital-literacy-platform.onrender.com"
+    ]
+    
+    # Get additional origins from environment variable
+    frontend_urls = os.getenv("FRONTEND_URL", "")
+    if frontend_urls:
+        additional_origins = [url.strip() for url in frontend_urls.split(",") if url.strip()]
+        return list(set(default_origins + additional_origins))
+    return default_origins
 
-# Add frontend URL from environment if it exists
-frontend_url = os.getenv("FRONTEND_URL")
-if frontend_url:
-    if "," in frontend_url:
-        allowed_origins.extend([url.strip() for url in frontend_url.split(",")])
-    else:
-        allowed_origins.append(frontend_url.strip())
-
-# For production, use the allowed_origins list which includes the Vercel URL
+# Configure CORS middleware with enhanced security
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=get_allowed_origins(),
+    allow_origin_regex=r"^https://[a-zA-Z0-9-]+\.vercel\.app$",  # Allow all Vercel preview deployments
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "Accept",
+        "Origin",
+        "X-Requested-With",
+        "X-CSRF-Token",
+    ],
+    expose_headers=["Content-Length", "X-Total-Count"],
+    max_age=600,  # Cache preflight requests for 10 minutes
 )
 
 # Include routers with /api prefix

@@ -61,40 +61,72 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> models.User:
-    """Get the current authenticated user from the token."""
+    """
+    Get the current authenticated user from the token.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Could not validate credentials. Please log in again.",
         headers={"WWW-Authenticate": "Bearer"},
     )
     
     try:
-        # Decode the JWT token
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Log the token for debugging (remove in production)
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
         
+        logger.debug(f"Received token: {token}")
+        
+        # Check if token is present
+        if not token or token == "null" or token == "undefined":
+            logger.error("No token provided in the Authorization header")
+            raise credentials_exception
+            
+        # Decode the JWT token
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            logger.debug(f"Decoded token payload: {payload}")
+        except jwt.ExpiredSignatureError:
+            logger.error("Token has expired")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired. Please log in again.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        except jwt.InvalidTokenError as e:
+            logger.error(f"Invalid token: {str(e)}")
+            raise credentials_exception
+            
         # Get the subject (email) from the token
         email: str = payload.get("sub")
-        if email is None:
+        if not email:
+            logger.error("No 'sub' claim in token")
             raise credentials_exception
             
-        # Create TokenData with the payload
-        token_data = schemas.TokenData(
-            sub=email,
-            email=email,
-            user_id=payload.get("user_id"),
-            role=payload.get("role")
-        )
-        
-        # Get user from database
+        # Log the email for debugging
+        logger.debug(f"Looking up user with email: {email}")
+            
+        # Get the user from the database
         user = db.query(models.User).filter(models.User.email == email).first()
-        if user is None:
+        if not user:
+            logger.error(f"User with email {email} not found")
             raise credentials_exception
             
+        # Check if user is active
+        if not user.is_active:
+            logger.error(f"User {email} is inactive")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is inactive. Please contact support.",
+            )
+            
+        logger.debug(f"Successfully authenticated user: {email}")
         return user
         
-    except PyJWTError as e:
-        print(f"JWT Error: {str(e)}")
-        raise credentials_exception
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+        
     except Exception as e:
         print(f"Unexpected error in get_current_user: {str(e)}")
         raise credentials_exception

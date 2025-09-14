@@ -1,79 +1,74 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export default defineConfig({
-  plugins: [
-    react({
-      include: '**/*.{js,jsx}',
-      babel: {
-        presets: ['@babel/preset-react'],
-        plugins: [
-          ['@emotion/babel-plugin', {
-            autoLabel: 'dev-only',
-            labelFormat: '[local]'
-          }]
-        ]
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory
+  const env = loadEnv(mode, process.cwd(), '');
+  
+  return {
+    plugins: [
+      react({
+        include: '**/*.{js,jsx}',
+        babel: {
+          presets: ['@babel/preset-react'],
+          plugins: [
+            ['@emotion/babel-plugin', {
+              autoLabel: 'dev-only',
+              labelFormat: '[local]'
+            }]
+          ]
+        },
+        jsxImportSource: '@emotion/react',
+      })
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
       },
-      jsxImportSource: '@emotion/react',
-    }),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
     },
-    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
-  },
-  server: {
-    port: 5173,
-    open: true,
-    strictPort: false,
-    proxy: {
-      '^/api/.*': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false,
-        ws: true,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('Proxy error:', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Sending request to backend:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received response from backend:', proxyRes.statusCode, req.url);
-          });
+    define: {
+      'process.env': {}
+    },
+    server: {
+      port: 5173,
+      open: true,
+      strictPort: true,
+      proxy: {
+        '^/api': {
+          target: env.VITE_API_URL || 'http://localhost:8000',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/api/, '')
         }
+      },
+      fs: {
+        // Allow serving files from one level up from the package root
+        allow: ['..']
       }
+    },
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      sourcemap: true,
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+      },
+    },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/setupTests.js',
+      testMatch: ['<rootDir>/src/**/*.test.{js,jsx,ts,tsx}'],
+      coverage: {
+        reporter: ['text', 'json', 'html'],
+      },
     }
-  },
-  esbuild: {
-    loader: 'jsx',
-    include: /src\/.*\.jsx?$/,
-    exclude: [],
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      loader: {
-        '.js': 'jsx',
-      },
-      jsx: 'automatic',
-    },
-  },
-  base: '/',
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-  },
-  css: {
-    modules: {
-      localsConvention: 'camelCaseOnly',
-    },
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@import "@/styles/variables.scss";`,
-      },
-    },
-  },
+  };
 });

@@ -55,54 +55,116 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
+      
+      // Make the login request
       const response = await authApi.login({ email, password });
       
-      if (!response?.data?.access_token) {
-        throw new Error('No access token received from server');
+      if (response?.data?.access_token) {
+        // Save the token from login response
+        const { access_token } = response.data;
+        
+        // Store the token in localStorage
+        localStorage.setItem('token', access_token);
+        
+        // Update axios default headers with the new token
+        authApi.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+        
+        try {
+          // Get user details using the token
+          const userResponse = await authApi.getMe();
+          
+          if (userResponse?.data) {
+            const user = userResponse.data;
+            const userRole = user.role?.toLowerCase() || 'student';
+            
+            setState({
+              user: user,
+              loading: false,
+              isAuthenticated: true,
+              isAdmin: userRole === 'admin',
+              isTeacher: userRole === 'teacher',
+              isStudent: userRole === 'student',
+              error: null,
+            });
+            
+            return { 
+              success: true,
+              message: 'Login successful!',
+              user: user
+            };
+          }
+          
+          // If we couldn't get user details but have a token, still consider it a success
+          return { 
+            success: true,
+            message: 'Login successful! Loading your profile...' 
+          };
+          
+        } catch (meError) {
+          console.error('Error fetching user details after login:', meError);
+          // Even if we can't get user details, the login was successful
+          // The user can refresh the page to try again
+          return { 
+            success: true,
+            message: 'Login successful! Loading your profile...' 
+          };
+        }
       }
       
-      const token = response.data.access_token;
-      localStorage.setItem('token', token);
+      // If we get here, something went wrong with the login
+      const errorMessage = 'Login failed. No access token received.';
       
-      // Get user data using the token
-      const userResponse = await authApi.getMe();
-      const userData = userResponse.data;
-      
-      setState({
-        user: userData,
+      setState(prev => ({
+        ...prev,
         loading: false,
-        isAuthenticated: true,
-        isAdmin: userData.role === 'admin',
-        isTeacher: userData.role === 'teacher',
-        isStudent: userData.role === 'student',
-        error: null,
-      });
+        error: errorMessage
+      }));
       
-      return { success: true };
+      return { 
+        success: false, 
+        error: errorMessage 
+      };
+      
     } catch (error) {
       console.error('Login error:', error);
+      
       let errorMessage = 'Login failed. Please check your credentials and try again.';
       
-      if (error.response?.data?.detail) {
-        if (typeof error.response.data.detail === 'string') {
-          errorMessage = error.response.data.detail;
-        } else if (Array.isArray(error.response.data.detail)) {
-          errorMessage = error.response.data.detail.map(err => err.msg || err).join(', ');
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (error.response.status === 401) {
+          errorMessage = 'Invalid email or password. Please try again.';
+        } else if (error.response.status === 400) {
+          errorMessage = 'Invalid request. Please check your input.';
+        } else if (error.response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        } else if (error.response.data?.detail) {
+          if (typeof error.response.data.detail === 'string') {
+            errorMessage = error.response.data.detail;
+          } else if (Array.isArray(error.response.data.detail)) {
+            errorMessage = error.response.data.detail.map(err => 
+              typeof err === 'object' ? (err.msg || JSON.stringify(err)) : String(err)
+            ).join(', ');
+          }
         }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = 'Network error. Please check your internet connection.';
       }
       
       setState(prev => ({
         ...prev,
         loading: false,
-        error: { 
-          message: errorMessage, 
-          code: error.response?.status || 500 
-        }
+        error: errorMessage
       }));
       
-      return { success: false, error: errorMessage };
+      return { 
+        success: false, 
+        error: errorMessage 
+      };
     }
-  };
+  }; // <-- Added missing closing brace and semicolon
 
   const value = {
     ...state,
@@ -112,48 +174,108 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
+      
+      // Make the registration request
       const response = await authApi.register(userData);
       
       if (response?.data?.access_token) {
         // Save the token from registration response
-        const token = response.data.access_token;
-        localStorage.setItem('token', token);
+        const { access_token } = response.data;
         
-        // Set the default authorization header
-        authApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        // Store the token in localStorage
+        localStorage.setItem('token', access_token);
         
-        // Get user details
-        const userResponse = await authApi.getMe();;
+        // Update axios default headers with the new token
+        authApi.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
         
-        setState({
-          user: userResponse.data,
-          loading: false,
-          isAuthenticated: true,
-          isAdmin: userResponse.data.role === 'admin',
-          isTeacher: userResponse.data.role === 'teacher',
-          isStudent: userResponse.data.role === 'student',
-          error: null,
-        });
-        
-        return { success: true };
+        try {
+          // Get user details using the token
+          const userResponse = await authApi.getMe();
+          
+          if (userResponse?.data) {
+            const user = userResponse.data;
+            const userRole = user.role?.toLowerCase() || 'student';
+            
+            setState({
+              user: user,
+              loading: false,
+              isAuthenticated: true,
+              isAdmin: userRole === 'admin',
+              isTeacher: userRole === 'teacher',
+              isStudent: userRole === 'student',
+              error: null,
+            });
+            
+            return { 
+              success: true,
+              message: 'Registration successful! Redirecting...',
+              user: user
+            };
+          }
+          
+          // If we couldn't get user details but have a token, still consider it a success
+          return { 
+            success: true,
+            message: 'Registration successful! Please log in with your credentials.'
+          };
+          
+        } catch (meError) {
+          console.error('Error fetching user details after registration:', meError);
+          // Even if we can't get user details, the registration was successful
+          // The user can log in manually
+          return { 
+            success: true,
+            message: 'Registration successful! Please log in with your credentials.'
+          };
+        }
       }
       
-      return { success: false, error: 'Registration failed - no token received' };
+      // If we get here, something went wrong with the registration
+      const errorMessage = response?.data?.detail || 'Registration failed. Please try again.';
+      
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: errorMessage
+      }));
+      
+      return { 
+        success: false, 
+        error: errorMessage
+      };
+      
     } catch (error) {
       console.error('Registration error:', error);
       let errorMessage = 'Registration failed. Please try again.';
-      if (error.response?.data?.detail) {
-        if (typeof error.response.data.detail === 'string') {
-          errorMessage = error.response.data.detail;
-        } else if (Array.isArray(error.response.data.detail)) {
-          errorMessage = error.response.data.detail.map(err => err.msg || err).join(', ');
-        } else {
-          errorMessage = 'Registration failed';
+      
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (error.response.data?.detail) {
+          if (typeof error.response.data.detail === 'string') {
+            errorMessage = error.response.data.detail;
+          } else if (Array.isArray(error.response.data.detail)) {
+            errorMessage = error.response.data.detail.map(err => 
+              typeof err === 'object' ? (err.msg || JSON.stringify(err)) : String(err)
+            ).join(', ');
+          }
+        } else if (error.response.status === 400) {
+          errorMessage = 'Invalid registration data. Please check your input.';
+        } else if (error.response.status === 500) {
+          errorMessage = 'Server error during registration. Please try again later.';
         }
       }
-      return { success: false, error: errorMessage };
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
+      
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: errorMessage
+      }));
+      
+      return { 
+        success: false, 
+        error: errorMessage 
+      };
     }
   };
 

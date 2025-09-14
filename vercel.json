@@ -4,11 +4,19 @@
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      "config": { 
+        "distDir": "dist",
+        "env": {
+          "VITE_API_URL": "https://digital-literacy-platform.onrender.com"
+        }
+      }
     }
   ],
   "routes": [
     { "handle": "filesystem" },
     { "src": "/.*", "dest": "/frontend/dist/index.html" }
-  ]
+  ],
+  "env": {
+    "VITE_API_URL": "https://digital-literacy-platform.onrender.com"
+  }
 }

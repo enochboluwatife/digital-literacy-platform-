@@ -132,20 +132,39 @@ async def get_current_active_admin(
     return current_user
 
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:
+    # Log the incoming user data for debugging
+    print(f"Creating user with email: {user.email}")
+    print(f"User data: {user.dict()}")
+    
+    # Hash the password
     hashed_password = get_password_hash(user.password)
+    
+    # Create the user object with all required fields
     db_user = models.User(
         email=user.email,
         hashed_password=hashed_password,
         first_name=user.first_name,
         last_name=user.last_name,
-        institution=user.institution,
-        role=user.role,
+        institution=user.institution,  # This can be None if not provided
+        role=user.role or models.UserRole.STUDENT,  # Default to STUDENT if not provided
         is_active=True
     )
+    
+    # Add to database
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    
+    try:
+        db.commit()
+        db.refresh(db_user)
+        print(f"Successfully created user with ID: {db_user.id}")
+        return db_user
+    except Exception as e:
+        db.rollback()
+        print(f"Error creating user: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create user in database"
+        )
 
 def update_user(
     db: Session, 

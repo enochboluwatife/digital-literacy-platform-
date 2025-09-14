@@ -117,17 +117,29 @@ const Register = () => {
       const result = await register(userData);
       
       if (result.success) {
+        // Show success message
         toast({
           title: 'Registration successful',
-          description: 'Your account has been created successfully.',
+          description: result.message || 'Your account has been created successfully.',
           status: 'success',
           duration: 5000,
           isClosable: true,
         });
         
-        // Redirect to dashboard after successful registration and login
-        navigate('/dashboard');
+        // If we have user data, it means we're already logged in
+        if (result.user) {
+          // Redirect to dashboard after a short delay to show the success message
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 1500);
+        } else {
+          // If not already logged in, redirect to login page
+          setTimeout(() => {
+            navigate('/login');
+          }, 1500);
+        }
       } else {
+        // Show error message if registration failed
         toast({
           title: 'Registration failed',
           description: result.error || 'Failed to create account. Please try again.',
@@ -138,9 +150,15 @@ const Register = () => {
       }
     } catch (error) {
       console.error('Registration error:', error);
+      
+      // Extract error message from the error object if available
+      const errorMessage = error.response?.data?.detail || 
+                         error.message || 
+                         'Failed to create account. Please try again later.';
+      
       toast({
         title: 'An error occurred',
-        description: 'Failed to create account. Please try again later.',
+        description: errorMessage,
         status: 'error',
         duration: 5000,
         isClosable: true,

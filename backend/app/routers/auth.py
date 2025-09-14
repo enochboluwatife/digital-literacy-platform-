@@ -13,7 +13,7 @@ router = APIRouter(
     tags=["authentication"]
 )
 
-@router.post("/register", response_model=schemas.Token)
+@router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
 def register_user(
     user: schemas.UserCreate,
     db: Session = Depends(get_db)
@@ -21,6 +21,7 @@ def register_user(
     """
     Register a new user and return an access token.
     """
+    # Check if user with this email already exists
     db_user = auth.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(
@@ -28,33 +29,44 @@ def register_user(
             detail="Email already registered"
         )
     
-    # Create the user
-    db_user = auth.create_user(db=db, user=user)
-    
     try:
+        # Create the user
+        db_user = auth.create_user(db=db, user=user)
+        
         # Create access token with user claims
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = auth.create_access_token(
             data={
                 "sub": db_user.email,  # Standard JWT practice is to use email as sub
                 "email": db_user.email,
-                "role": db_user.role,
+                "role": db_user.role.value,  # Convert enum to string
                 "user_id": db_user.id
             },
             expires_delta=access_token_expires
         )
         
+        # Log successful registration
+        logger.info(f"Successfully registered user: {db_user.email} (ID: {db_user.id})")
+        
         return {
             "access_token": access_token,
             "token_type": "bearer"
         }
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+        
     except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error creating access token during registration: {str(e)}")
+        # Log the error
+        logger.error(f"Error during user registration: {str(e)}", exc_info=True)
+        
+        # Rollback any database changes
+        db.rollback()
+        
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="User created but could not generate access token"
+            detail="An error occurred during registration. Please try again."
         )
 
 @router.post("/login", response_model=schemas.Token)
