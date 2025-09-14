@@ -30,13 +30,10 @@ def get_allowed_origins():
         "http://localhost:3001",
         "http://localhost:5173",  # Vite dev server
         "https://digital-literacy-platform.vercel.app",
-        "https://digital-literacy-platform-*.vercel.app",  # For preview deployments
-        "https://digital-literacy-platform-git-*.vercel.app",  # For PR previews
-        "http://localhost:5173",
+        "https://digital-literacy-platform-git-main-enochs-projects-36982255.vercel.app",  # Specific Vercel deployment
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
         "http://127.0.0.1:5173",
-        "https://digital-literacy-platform.vercel.app",
         "https://digital-literacy-platform.onrender.com"
     ]
     
@@ -51,7 +48,7 @@ def get_allowed_origins():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_allowed_origins(),
-    allow_origin_regex=r"^https://[a-zA-Z0-9-]+\.vercel\.app$",  # Allow all Vercel preview deployments
+    allow_origin_regex=r"^https://.*\.vercel\.app$",  # Allow all Vercel preview deployments
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=[
