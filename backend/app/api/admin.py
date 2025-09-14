@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas
 from ..database import get_db
-from ..core.security import get_current_user, get_current_admin_user, get_password_hash
+from ..core.security import get_current_user, get_current_active_user, get_current_admin_user, get_password_hash
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -47,7 +47,7 @@ def create_module(
     course_id: int,
     module: schemas.ModuleCreate,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_admin_user)
+    current_user: models.User = Depends(get_current_active_user)
 ):
     """Create a new module within a course (admin only)"""
     # Verify course exists
@@ -106,7 +106,7 @@ def create_quiz_question(
     module_id: int,
     question: schemas.QuizQuestionCreate,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_admin_user)
+    current_user: models.User = Depends(get_current_active_user)
 ):
     """Create a new quiz question for a module (admin only)"""
     # Verify module exists
