@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .. import models, schemas
 from ..database import get_db
-from ..auth import get_current_active_user
+from ..core.security import get_current_active_user
 
 router = APIRouter(
     prefix="/quizzes",
