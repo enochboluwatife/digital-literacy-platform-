@@ -76,12 +76,17 @@ class ModuleBase(BaseModel):
     content: Optional[str] = None
     content_type: str = "text"  # text, video, quiz, etc.
     duration: int = 0  # in minutes
-    order: int = 0
+    order_index: int = 0
     is_published: bool = True
-    course_id: int
 
-class ModuleCreate(ModuleBase):
-    pass
+class ModuleCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    content: Optional[str] = None
+    content_type: str = "text"
+    duration: int = 0
+    order_index: int = 0
+    is_published: bool = True
 
 class ModuleUpdate(BaseModel):
     title: Optional[str] = None
@@ -89,15 +94,22 @@ class ModuleUpdate(BaseModel):
     content: Optional[str] = None
     content_type: Optional[str] = None
     duration: Optional[int] = None
-    order: Optional[int] = None
+    order_index: Optional[int] = None
     is_published: Optional[bool] = None
-    course_id: Optional[int] = None
 
-class ModuleOut(ModuleBase):
+class ModuleOut(BaseModel):
     id: int
+    title: str
+    description: Optional[str] = None
+    content: Optional[str] = None
+    content_type: str = "text"
+    duration: int = 0
+    order_index: int = 0
+    is_published: bool = True
+    course_id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
-
+    
     class Config:
         from_attributes = True
 
