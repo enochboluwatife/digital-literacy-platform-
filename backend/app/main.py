@@ -6,7 +6,14 @@ from . import models, schemas
 from .database import engine, SessionLocal
 from .routers import auth, users, courses, quizzes, enrollments, modules
 from .api import admin
+from app.seed_data import init_db
 import os
+
+# Create database tables and seed demo data
+if os.getenv("ENVIRONMENT") == "production":
+    init_db()  # Auto-seed in production
+else:
+    models.Base.metadata.create_all(bind=engine)
 
 # Database dependency
 def get_db():
@@ -15,9 +22,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-# Create database tables
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Digital Literacy Platform API", version="1.0.0")
 
