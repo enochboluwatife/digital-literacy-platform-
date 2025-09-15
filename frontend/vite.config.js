@@ -11,20 +11,6 @@ export default defineConfig(({ mode }) => {
     esbuild: {
       minify: false // Disable esbuild minification
     },
-    build: {
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: true,
-          drop_debugger: true
-        }
-      },
-      rollupOptions: {
-        output: {
-          manualChunks: undefined // Disable code splitting for now
-        }
-      }
-    },
     plugins: [
       react({
         include: '**/*.{js,jsx}',
@@ -69,7 +55,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
-      sourcemap: true,
+      sourcemap: false,
       minify: 'terser',
       terserOptions: {
         compress: {
@@ -77,6 +63,14 @@ export default defineConfig(({ mode }) => {
           drop_debugger: true,
         },
       },
+      rollupOptions: {
+        output: {
+          manualChunks: undefined,
+          entryFileNames: 'assets/[name].[hash].js',
+          chunkFileNames: 'assets/[name].[hash].js',
+          assetFileNames: 'assets/[name].[hash].[ext]'
+        }
+      }
     },
     test: {
       globals: true,
