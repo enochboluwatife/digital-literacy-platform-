@@ -4,7 +4,7 @@ import jwt
 from jwt import PyJWTError
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 import os
 from . import models, schemas
@@ -17,6 +17,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+optional_oauth2_scheme = HTTPBearer(auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -113,6 +114,32 @@ async def get_current_user(
     except Exception as e:
         print(f"Unexpected error in auth.get_current_user: {str(e)}")
         raise credentials_exception
+
+async def get_current_user_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> Optional[models.User]:
+    """Get current user but return None if no valid token is provided"""
+    if not credentials:
+        return None
+        
+    try:
+        # Decode the JWT token
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        
+        # Get the subject (email) from the token
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+            
+        # Get user from database
+        user = get_user_by_email(db, email=email)
+        return user
+        
+    except PyJWTError:
+        return None
+    except Exception:
+        return None
 
 async def get_current_active_user(
     current_user: models.User = Depends(get_current_user),

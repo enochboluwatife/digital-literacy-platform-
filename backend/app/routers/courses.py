@@ -16,10 +16,20 @@ def get_courses(
     skip: int = 0, 
     limit: int = 100, 
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(auth.get_current_active_user)
+    current_user: models.User = Depends(auth.get_current_user_optional)
 ):
+    # If no user is logged in, return only published courses
+    if current_user is None:
+        courses = (
+            db.query(models.Course)
+            .filter(models.Course.is_published == True)
+            .order_by(models.Course.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
     # If user is a teacher, return only their courses
-    if current_user.role == models.UserRole.TEACHER:
+    elif current_user.role == models.UserRole.TEACHER:
         courses = (
             db.query(models.Course)
             .filter(models.Course.teacher_id == current_user.id)
