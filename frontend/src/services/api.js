@@ -24,8 +24,12 @@ const getApiUrl = () => {
   } else {
     url = import.meta.env.VITE_API_URL || 'https://digital-literacy-platform.onrender.com';
   }
-  // Ensure URL doesn't end with a slash
-  return url.endsWith('/') ? url.slice(0, -1) : url;
+  // Ensure URL doesn't end with a slash and add /api if not present
+  url = url.endsWith('/') ? url.slice(0, -1) : url;
+  if (!url.endsWith('/api')) {
+    url += '/api';
+  }
+  return url;
 };
 
 const API_URL = getApiUrl();
