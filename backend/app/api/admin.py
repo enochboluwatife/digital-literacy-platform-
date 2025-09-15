@@ -8,6 +8,26 @@ from ..core.security import get_current_user, get_current_active_user, get_curre
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 # Course Management
+@router.get("/courses/", response_model=List[schemas.CourseOut])
+def get_courses(
+    skip: int = 0,
+    limit: int = 100,
+    teacher_id: int = None,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """Get courses (admin and teachers can see their courses)"""
+    query = db.query(models.Course)
+    
+    # If teacher_id is specified, filter by teacher
+    if teacher_id:
+        query = query.filter(models.Course.teacher_id == teacher_id)
+    # If user is a teacher, only show their courses
+    elif current_user.role == models.UserRole.TEACHER:
+        query = query.filter(models.Course.teacher_id == current_user.id)
+    
+    return query.offset(skip).limit(limit).all()
+
 @router.post("/courses/", response_model=schemas.CourseOut, status_code=status.HTTP_201_CREATED)
 def create_course(
     course: schemas.CourseCreate,
@@ -15,7 +35,12 @@ def create_course(
     current_user: models.User = Depends(get_current_admin_user)
 ):
     """Create a new course (admin only)"""
-    db_course = models.Course(**course.dict())
+    course_data = course.dict()
+    # Set teacher_id to current user if not provided
+    if 'teacher_id' not in course_data or course_data['teacher_id'] is None:
+        course_data['teacher_id'] = current_user.id
+    
+    db_course = models.Course(**course_data)
     db.add(db_course)
     db.commit()
     db.refresh(db_course)

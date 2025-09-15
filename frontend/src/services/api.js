@@ -124,18 +124,18 @@ export const authApi = {
     const formData = new FormData();
     formData.append('username', credentials.email);
     formData.append('password', credentials.password);
-    return api.post('auth/login', formData, {
+    return api.post('/auth/login', formData, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
   },
-  register: (userData) => api.post('auth/register', userData, { 
+  register: (userData) => api.post('/auth/register', userData, { 
     headers: { 'Content-Type': 'application/json' } 
   }),
-  getMe: () => api.get('auth/me'),
-  refreshToken: (refreshToken) => api.post('auth/refresh', { refresh_token: refreshToken }),
-  updateProfile: (data) => api.put('auth/me', data),
-  requestPasswordReset: (email) => api.post('auth/forgot-password', { email }),
-  resetPassword: (data) => api.post('auth/reset-password', data),
+  getMe: () => api.get('/auth/me'),
+  refreshToken: (refreshToken) => api.post('/auth/refresh', { refresh_token: refreshToken }),
+  updateProfile: (data) => api.put('/auth/me', data),
+  requestPasswordReset: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
