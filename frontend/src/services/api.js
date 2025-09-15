@@ -152,7 +152,7 @@ export const coursesApi = {
   getLesson: (courseId, moduleId, lessonId) => 
     api.get(`/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`),
   enroll: (courseId) => api.post('/enrollments', { course_id: courseId }),
-  getEnrollments: () => api.get('/enrollments'),
+  getEnrollments: () => api.get('/enrollments/me'),
 };
 
 // Quiz API
