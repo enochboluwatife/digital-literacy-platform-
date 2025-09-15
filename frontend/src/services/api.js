@@ -147,6 +147,7 @@ export const authApi = {
 export const coursesApi = {
   ...createApiModule('/courses'),
   getCourses: (params = {}) => api.get('/courses', { params }),
+  getCourse: (courseId) => api.get(`/courses/${courseId}`),
   getModules: (courseId) => api.get(`/courses/${courseId}/modules`),
   getModule: (courseId, moduleId) => api.get(`/courses/${courseId}/modules/${moduleId}`),
   getLesson: (courseId, moduleId, lessonId) => 
@@ -158,8 +159,10 @@ export const coursesApi = {
 // Quiz API
 export const quizApi = {
   get: (quizId) => api.get(`/quizzes/${quizId}`),
+  getQuizQuestions: (moduleId) => api.get(`/quizzes/module/${moduleId}`),
   submit: (quizId, answers) => api.post(`/quizzes/submit/${quizId}`, { answers }),
-  getResults: (quizId) => api.get(`/quizzes/results/${quizId}`),
+  submitQuiz: (moduleId, submission) => api.post(`/quizzes/submit/${moduleId}`, submission),
+  getResults: (moduleId) => api.get(`/quizzes/results/${moduleId}`),
   getAttempts: (quizId) => api.get(`/quizzes/${quizId}/attempts`),
 };
 

@@ -57,11 +57,14 @@ const CourseDetail = () => {
     fetchCourse();
   }, [courseId]);
 
-  const handleModuleClick = (module, index) => {
-    if (module.content_type === 'quiz') {
+  const handleModuleClick = (module, index, startQuiz = false) => {
+    setActiveModule({
+      ...module,
+      index
+    });
+    
+    if (startQuiz && module.content_type === 'quiz') {
       setIsQuizModalOpen(true);
-    } else {
-      setActiveModule({ ...module, index });
     }
   };
 

@@ -80,6 +80,21 @@ const ModuleItem = ({
               {module.duration} min
             </Text>
           )}
+          
+          {module.content_type === 'quiz' && isActive && (
+            <Button
+              size="sm"
+              colorScheme="purple"
+              mt={2}
+              onClick={(e) => {
+                e.stopPropagation();
+                // This will be handled by the parent component
+                if (onClick) onClick(module, true); // Pass true to indicate quiz start
+              }}
+            >
+              Take Quiz
+            </Button>
+          )}
         </Box>
         
         <Box>

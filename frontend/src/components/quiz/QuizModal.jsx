@@ -121,7 +121,7 @@ const QuizModal = ({ isOpen, onClose, moduleId, onComplete }) => {
           .filter(([_, optionId]) => optionId !== null)
           .map(([questionId, optionId]) => ({
             question_id: parseInt(questionId),
-            option_id: optionId
+            selected_option_id: optionId
           }))
       };
       
